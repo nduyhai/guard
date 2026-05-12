@@ -37,135 +37,135 @@ import org.springframework.context.annotation.ImportRuntimeHints;
 /**
  * Spring Boot auto-configuration for the Guard framework.
  *
- * <p>Activates when {@code guard.enabled=true} (the default). Registers sensible
- * in-memory default implementations for all SPIs; replace any bean with a custom
- * implementation to override behaviour (e.g. Redis-backed store or custom publisher).
+ * <p>Activates when {@code guard.enabled=true} (the default). Registers sensible in-memory default
+ * implementations for all SPIs; replace any bean with a custom implementation to override behaviour
+ * (e.g. Redis-backed store or custom publisher).
  *
  * <p>All beans are guarded with {@code @ConditionalOnMissingBean} so that
  * {@code @EnableGuard}-registered beans always take precedence.
  */
 @AutoConfiguration
-@ConditionalOnProperty(prefix = "guard", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+    prefix = "guard",
+    name = "enabled",
+    havingValue = "true",
+    matchIfMissing = true)
 @EnableConfigurationProperties(GuardProperties.class)
 @ImportRuntimeHints(GuardRuntimeHints.class)
 @RegisterReflectionForBinding(GuardProperties.class)
 public class GuardAutoConfiguration {
 
-    // ---- SpEL evaluation ----
+  // ---- SpEL evaluation ----
 
-    @Bean
-    @ConditionalOnMissingBean
-    public SpelExpressionEvaluator guardSpelExpressionEvaluator() {
-        return new SpelExpressionEvaluator();
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public SpelExpressionEvaluator guardSpelExpressionEvaluator() {
+    return new SpelExpressionEvaluator();
+  }
 
-    // ---- Annotation extraction ----
+  // ---- Annotation extraction ----
 
-    @Bean
-    @ConditionalOnMissingBean
-    public AnnotationMetadataExtractor guardAnnotationMetadataExtractor() {
-        return new AnnotationMetadataExtractor();
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public AnnotationMetadataExtractor guardAnnotationMetadataExtractor() {
+    return new AnnotationMetadataExtractor();
+  }
 
-    // ---- Idempotent ----
+  // ---- Idempotent ----
 
-    @Bean
-    @ConditionalOnMissingBean
-    public IdempotentStore guardIdempotentStore() {
-        return new InMemoryIdempotentStore();
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public IdempotentStore guardIdempotentStore() {
+    return new InMemoryIdempotentStore();
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public IdempotentKeyResolver guardIdempotentKeyResolver(SpelExpressionEvaluator evaluator) {
-        return new DefaultIdempotentKeyResolver(evaluator);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public IdempotentKeyResolver guardIdempotentKeyResolver(SpelExpressionEvaluator evaluator) {
+    return new DefaultIdempotentKeyResolver(evaluator);
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public IdempotentHandler guardIdempotentHandler(
-            IdempotentStore store,
-            IdempotentKeyResolver keyResolver) {
-        return new IdempotentHandler(store, keyResolver);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public IdempotentHandler guardIdempotentHandler(
+      IdempotentStore store, IdempotentKeyResolver keyResolver) {
+    return new IdempotentHandler(store, keyResolver);
+  }
 
-    // ---- Distributed lock ----
+  // ---- Distributed lock ----
 
-    @Bean
-    @ConditionalOnMissingBean
-    public LockProvider guardLockProvider() {
-        return new InMemoryLockProvider();
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public LockProvider guardLockProvider() {
+    return new InMemoryLockProvider();
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public LockKeyResolver guardLockKeyResolver(SpelExpressionEvaluator evaluator) {
-        return new DefaultLockKeyResolver(evaluator);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public LockKeyResolver guardLockKeyResolver(SpelExpressionEvaluator evaluator) {
+    return new DefaultLockKeyResolver(evaluator);
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public DistributedLockHandler guardDistributedLockHandler(
-            LockProvider lockProvider,
-            LockKeyResolver keyResolver) {
-        return new DistributedLockHandler(lockProvider, keyResolver);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public DistributedLockHandler guardDistributedLockHandler(
+      LockProvider lockProvider, LockKeyResolver keyResolver) {
+    return new DistributedLockHandler(lockProvider, keyResolver);
+  }
 
-    // ---- Rate limit ----
+  // ---- Rate limit ----
 
-    @Bean
-    @ConditionalOnMissingBean
-    public GuardRateLimiter guardRateLimiter() {
-        return new SlidingWindowRateLimiter();
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public GuardRateLimiter guardRateLimiter() {
+    return new SlidingWindowRateLimiter();
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public RateLimitKeyResolver guardRateLimitKeyResolver(SpelExpressionEvaluator evaluator) {
-        return new DefaultRateLimitKeyResolver(evaluator);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public RateLimitKeyResolver guardRateLimitKeyResolver(SpelExpressionEvaluator evaluator) {
+    return new DefaultRateLimitKeyResolver(evaluator);
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public RateLimitHandler guardRateLimitHandler(
-            GuardRateLimiter rateLimiter,
-            RateLimitKeyResolver keyResolver) {
-        return new RateLimitHandler(rateLimiter, keyResolver);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public RateLimitHandler guardRateLimitHandler(
+      GuardRateLimiter rateLimiter, RateLimitKeyResolver keyResolver) {
+    return new RateLimitHandler(rateLimiter, keyResolver);
+  }
 
-    // ---- Audit ----
+  // ---- Audit ----
 
-    @Bean
-    @ConditionalOnMissingBean
-    public AuditPublisher guardAuditPublisher() {
-        return new LoggingAuditPublisher();
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public AuditPublisher guardAuditPublisher() {
+    return new LoggingAuditPublisher();
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public AuditLogHandler guardAuditLogHandler(AuditPublisher publisher) {
-        return new AuditLogHandler(publisher);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public AuditLogHandler guardAuditLogHandler(AuditPublisher publisher) {
+    return new AuditLogHandler(publisher);
+  }
 
-    // ---- AOP core ----
+  // ---- AOP core ----
 
-    @Bean
-    @ConditionalOnMissingBean
-    public GuardExecutionChain guardExecutionChain(@Autowired List<GuardHandler> handlers) {
-        return new GuardExecutionChain(handlers);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public GuardExecutionChain guardExecutionChain(@Autowired List<GuardHandler> handlers) {
+    return new GuardExecutionChain(handlers);
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public GuardMethodInterceptor guardMethodInterceptor(
-            GuardExecutionChain executionChain,
-            AnnotationMetadataExtractor extractor) {
-        return new GuardMethodInterceptor(executionChain, extractor);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public GuardMethodInterceptor guardMethodInterceptor(
+      GuardExecutionChain executionChain, AnnotationMetadataExtractor extractor) {
+    return new GuardMethodInterceptor(executionChain, extractor);
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public GuardAdvisor guardAdvisor(GuardMethodInterceptor interceptor) {
-        return new GuardAdvisor(interceptor);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public GuardAdvisor guardAdvisor(GuardMethodInterceptor interceptor) {
+    return new GuardAdvisor(interceptor);
+  }
 }

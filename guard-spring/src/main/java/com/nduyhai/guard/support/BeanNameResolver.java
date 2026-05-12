@@ -1,7 +1,7 @@
 package com.nduyhai.guard.support;
 
-import org.springframework.beans.factory.BeanFactory;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.BeanFactory;
 
 /**
  * Resolves bean instances by name from a {@link BeanFactory}.

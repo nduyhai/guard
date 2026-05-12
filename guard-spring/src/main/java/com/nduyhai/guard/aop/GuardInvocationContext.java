@@ -1,10 +1,9 @@
 package com.nduyhai.guard.aop;
 
-import org.jspecify.annotations.Nullable;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Immutable snapshot of a single method invocation captured by {@link GuardMethodInterceptor}.

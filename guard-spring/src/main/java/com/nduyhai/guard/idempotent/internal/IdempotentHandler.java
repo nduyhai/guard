@@ -14,51 +14,52 @@ import org.jspecify.annotations.Nullable;
 /**
  * {@link GuardHandler} that implements the {@code @Idempotent} contract.
  *
- * <p>On the first successful call the result is stored in the {@link IdempotentStore}.
- * Subsequent calls with the same key within the TTL window return the cached result
- * without executing the method again.
+ * <p>On the first successful call the result is stored in the {@link IdempotentStore}. Subsequent
+ * calls with the same key within the TTL window return the cached result without executing the
+ * method again.
  *
  * <p>Exceptions thrown by the method are NOT cached.
  */
 public final class IdempotentHandler implements GuardHandler {
 
-    public static final int ORDER = 200;
+  public static final int ORDER = 200;
 
-    private final IdempotentStore store;
-    private final IdempotentKeyResolver keyResolver;
+  private final IdempotentStore store;
+  private final IdempotentKeyResolver keyResolver;
 
-    public IdempotentHandler(IdempotentStore store, IdempotentKeyResolver keyResolver) {
-        this.store = store;
-        this.keyResolver = keyResolver;
+  public IdempotentHandler(IdempotentStore store, IdempotentKeyResolver keyResolver) {
+    this.store = store;
+    this.keyResolver = keyResolver;
+  }
+
+  @Override
+  @Nullable
+  public Object handle(GuardInvocationContext context, GuardOperationInvoker invoker)
+      throws Throwable {
+    Idempotent annotation = context.getAnnotation(Idempotent.class);
+    if (annotation == null) {
+      return invoker.invoke();
     }
 
-    @Override
-    @Nullable
-    public Object handle(GuardInvocationContext context, GuardOperationInvoker invoker) throws Throwable {
-        Idempotent annotation = context.getAnnotation(Idempotent.class);
-        if (annotation == null) {
-            return invoker.invoke();
-        }
-
-        String key = keyResolver.resolve(context, annotation);
-        Optional<Object> cached = store.get(key);
-        if (cached.isPresent()) {
-            return cached.get();
-        }
-
-        Object result = invoker.invoke();
-        Duration ttl = GuardUtils.parseDuration(annotation.ttl());
-        store.put(key, result, ttl);
-        return result;
+    String key = keyResolver.resolve(context, annotation);
+    Optional<Object> cached = store.get(key);
+    if (cached.isPresent()) {
+      return cached.get();
     }
 
-    @Override
-    public boolean supports(GuardInvocationContext context) {
-        return context.hasAnnotation(Idempotent.class);
-    }
+    Object result = invoker.invoke();
+    Duration ttl = GuardUtils.parseDuration(annotation.ttl());
+    store.put(key, result, ttl);
+    return result;
+  }
 
-    @Override
-    public int getOrder() {
-        return ORDER;
-    }
+  @Override
+  public boolean supports(GuardInvocationContext context) {
+    return context.hasAnnotation(Idempotent.class);
+  }
+
+  @Override
+  public int getOrder() {
+    return ORDER;
+  }
 }

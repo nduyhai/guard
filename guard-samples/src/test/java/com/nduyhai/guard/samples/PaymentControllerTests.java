@@ -1,54 +1,71 @@
 package com.nduyhai.guard.samples;
 
-import com.nduyhai.guard.samples.payment.PaymentRequest;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-@SpringBootTest
-@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = WebEnvironment.MOCK)
 class PaymentControllerTests {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired private WebApplicationContext context;
 
-    @Test
-    void createPaymentReturnsSuccess() throws Exception {
-        mockMvc.perform(post("/api/payments")
-                        .param("merchantId", "merchant-001")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"orderId":"order-999","amount":5000,"currency":"USD"}
-                                """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("SUCCESS"))
-                .andExpect(jsonPath("$.orderId").value("order-999"));
-    }
+  private MockMvc mockMvc;
 
-    @Test
-    void duplicateOrderIdReturnsCachedResult() throws Exception {
-        String body = """
-                {"orderId":"order-idempotent","amount":100,"currency":"EUR"}
-                """;
+  @BeforeEach
+  void setUp() {
+    mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+  }
 
-        mockMvc.perform(post("/api/payments")
-                        .param("merchantId", "merchant-002")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isOk());
+  @Test
+  void createPaymentReturnsSuccess() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/payments")
+                .param("merchantId", "merchant-001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"orderId":"order-999","amount":5000,"currency":"USD"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("SUCCESS"))
+        .andExpect(jsonPath("$.orderId").value("order-999"));
+  }
 
-        // Second call with same orderId must return 200 (cached)
-        mockMvc.perform(post("/api/payments")
-                        .param("merchantId", "merchant-002")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("SUCCESS"));
-    }
+  @Test
+  void duplicateOrderIdReturnsCachedResult() throws Exception {
+    String orderId = "order-idem-" + System.nanoTime();
+    String body =
+        """
+        {"orderId":"%s","amount":100,"currency":"EUR"}
+        """
+            .formatted(orderId);
+
+    mockMvc
+        .perform(
+            post("/api/payments")
+                .param("merchantId", "merchant-002")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/api/payments")
+                .param("merchantId", "merchant-002")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("SUCCESS"));
+  }
 }

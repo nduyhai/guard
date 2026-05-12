@@ -22,32 +22,30 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/payments")
 public class PaymentController {
 
-    private final PaymentService paymentService;
+  private final PaymentService paymentService;
 
-    public PaymentController(PaymentService paymentService) {
-        this.paymentService = paymentService;
-    }
+  public PaymentController(PaymentService paymentService) {
+    this.paymentService = paymentService;
+  }
 
-    @PostMapping
-    public ResponseEntity<PaymentResponse> createPayment(
-            @RequestBody PaymentRequest request,
-            @RequestParam String merchantId) {
-        PaymentResponse response = paymentService.createPayment(request, merchantId);
-        return ResponseEntity.ok(response);
-    }
+  @PostMapping
+  public ResponseEntity<PaymentResponse> createPayment(
+      @RequestBody PaymentRequest request, @RequestParam String merchantId) {
+    PaymentResponse response = paymentService.createPayment(request, merchantId);
+    return ResponseEntity.ok(response);
+  }
 
-    @ExceptionHandler(RateLimitExceededException.class)
-    public ResponseEntity<ErrorResponse> handleRateLimit(RateLimitExceededException ex) {
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(new ErrorResponse("RATE_LIMIT_EXCEEDED", ex.getMessage()));
-    }
+  @ExceptionHandler(RateLimitExceededException.class)
+  public ResponseEntity<ErrorResponse> handleRateLimit(RateLimitExceededException ex) {
+    return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+        .body(new ErrorResponse("RATE_LIMIT_EXCEEDED", ex.getMessage()));
+  }
 
-    @ExceptionHandler(LockException.class)
-    public ResponseEntity<ErrorResponse> handleLock(LockException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse("LOCK_CONFLICT", ex.getMessage()));
-    }
+  @ExceptionHandler(LockException.class)
+  public ResponseEntity<ErrorResponse> handleLock(LockException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(new ErrorResponse("LOCK_CONFLICT", ex.getMessage()));
+  }
 
-    public record ErrorResponse(String code, String message) {
-    }
+  public record ErrorResponse(String code, String message) {}
 }

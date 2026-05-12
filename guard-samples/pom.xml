@@ -13,7 +13,8 @@
 
     <artifactId>guard-samples</artifactId>
     <name>Guard :: Samples</name>
-    <description>Demo applications showing Guard usage with REST, idempotency, locking, rate limiting, and auditing</description>
+    <description>Demo applications showing Guard usage with REST, idempotency, locking, rate limiting, and auditing
+    </description>
 
     <dependencies>
         <dependency>
