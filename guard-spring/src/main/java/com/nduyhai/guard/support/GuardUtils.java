@@ -18,11 +18,10 @@ public final class GuardUtils {
       throw new IllegalArgumentException("Duration value must not be blank");
     }
     String trimmed = value.trim();
-    char unit = trimmed.charAt(trimmed.length() - 1);
-    if (Character.isDigit(unit)) {
-      // Assume ISO-8601 (e.g. "PT10M")
+    if (trimmed.charAt(0) == 'P' || trimmed.charAt(0) == 'p') {
       return Duration.parse(trimmed);
     }
+    char unit = trimmed.charAt(trimmed.length() - 1);
     long amount;
     try {
       amount = Long.parseLong(trimmed.substring(0, trimmed.length() - 1));
