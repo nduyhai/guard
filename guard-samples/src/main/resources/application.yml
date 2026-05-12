@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: guard-sample
+
+server:
+  port: 8080
+
+# Guard framework configuration
+guard:
+  enabled: true
+  idempotent:
+    default-ttl: 10m
+  lock:
+    default-wait-time: 5s
+    default-lease-time: 30s
+  rate-limit:
+    default-limit: 100
+    default-window: 1m
+
+logging:
+  level:
+    com.nduyhai.guard: DEBUG
+
+# Actuator — exposes Spring Modulith documentation endpoint
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, modulith

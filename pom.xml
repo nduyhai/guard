@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.0.6</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.nduyhai</groupId>
+    <artifactId>guard-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Guard :: Parent</name>
+    <description>Annotation-driven method guard framework for Spring Boot</description>
+
+    <modules>
+        <module>guard-core</module>
+        <module>guard-spring</module>
+        <module>guard-spring-boot-autoconfigure</module>
+        <module>guard-spring-boot-starter</module>
+        <module>guard-samples</module>
+    </modules>
+
+    <properties>
+        <java.version>25</java.version>
+        <spring-modulith.version>2.0.6</spring-modulith.version>
+        <guard.version>0.1.0-SNAPSHOT</guard.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Internal modules -->
+            <dependency>
+                <groupId>com.nduyhai</groupId>
+                <artifactId>guard-core</artifactId>
+                <version>${guard.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.nduyhai</groupId>
+                <artifactId>guard-spring</artifactId>
+                <version>${guard.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.nduyhai</groupId>
+                <artifactId>guard-spring-boot-autoconfigure</artifactId>
+                <version>${guard.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.nduyhai</groupId>
+                <artifactId>guard-spring-boot-starter</artifactId>
+                <version>${guard.version}</version>
+            </dependency>
+
+            <!-- Spring Modulith 2.x targets Spring Framework 7 / Spring Boot 4 -->
+            <dependency>
+                <groupId>org.springframework.modulith</groupId>
+                <artifactId>spring-modulith-bom</artifactId>
+                <version>${spring-modulith.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
