@@ -13,6 +13,14 @@ import com.nduyhai.guard.idempotent.internal.IdempotentHandler;
 import com.nduyhai.guard.idempotent.internal.InMemoryIdempotentStore;
 import com.nduyhai.guard.lock.internal.DistributedLockHandler;
 import com.nduyhai.guard.lock.internal.InMemoryLockProvider;
+import com.nduyhai.guard.metrics.DefaultGuardObservationConvention;
+import com.nduyhai.guard.metrics.GuardMetricsTags;
+import com.nduyhai.guard.metrics.GuardObservationContext;
+import com.nduyhai.guard.metrics.GuardObservationDocumentation;
+import com.nduyhai.guard.metrics.GuardObservationFilter;
+import com.nduyhai.guard.metrics.GuardObservationHandler;
+import com.nduyhai.guard.metrics.MicrometerGuardMetrics;
+import com.nduyhai.guard.metrics.NoopGuardMetrics;
 import com.nduyhai.guard.ratelimit.internal.RateLimitHandler;
 import com.nduyhai.guard.ratelimit.internal.SlidingWindowRateLimiter;
 import com.nduyhai.guard.support.AnnotationMetadataExtractor;
@@ -54,5 +62,18 @@ public final class GuardRuntimeHints implements RuntimeHintsRegistrar {
     hints.reflection().registerType(InMemoryLockProvider.class, MemberCategory.values());
     hints.reflection().registerType(RateLimitHandler.class, MemberCategory.values());
     hints.reflection().registerType(SlidingWindowRateLimiter.class, MemberCategory.values());
+
+    // Metrics
+    hints.reflection().registerType(NoopGuardMetrics.class, MemberCategory.values());
+    hints.reflection().registerType(MicrometerGuardMetrics.class, MemberCategory.values());
+    hints.reflection().registerType(GuardMetricsTags.class, MemberCategory.values());
+
+    // Observation API
+    hints.reflection().registerType(GuardObservationContext.class, MemberCategory.values());
+    hints.reflection().registerType(GuardObservationDocumentation.class, MemberCategory.values());
+    hints.reflection()
+        .registerType(DefaultGuardObservationConvention.class, MemberCategory.values());
+    hints.reflection().registerType(GuardObservationFilter.class, MemberCategory.values());
+    hints.reflection().registerType(GuardObservationHandler.class, MemberCategory.values());
   }
 }

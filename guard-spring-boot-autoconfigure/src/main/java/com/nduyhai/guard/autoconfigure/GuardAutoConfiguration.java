@@ -18,6 +18,8 @@ import com.nduyhai.guard.lock.api.LockKeyResolver;
 import com.nduyhai.guard.lock.internal.DefaultLockKeyResolver;
 import com.nduyhai.guard.lock.internal.DistributedLockHandler;
 import com.nduyhai.guard.lock.internal.InMemoryLockProvider;
+import com.nduyhai.guard.metrics.GuardMetrics;
+import com.nduyhai.guard.metrics.NoopGuardMetrics;
 import com.nduyhai.guard.ratelimit.api.RateLimitKeyResolver;
 import com.nduyhai.guard.ratelimit.internal.DefaultRateLimitKeyResolver;
 import com.nduyhai.guard.ratelimit.internal.RateLimitHandler;
@@ -43,6 +45,10 @@ import org.springframework.context.annotation.ImportRuntimeHints;
  *
  * <p>All beans are guarded with {@code @ConditionalOnMissingBean} so that
  * {@code @EnableGuard}-registered beans always take precedence.
+ *
+ * <p>{@link GuardMetricsAutoConfiguration} (which runs before this class) provides a
+ * {@link GuardMetrics} bean when Micrometer is on the classpath. When it is absent, the
+ * {@link NoopGuardMetrics} fallback registered here is used instead.
  */
 @AutoConfiguration
 @ConditionalOnProperty(
@@ -54,6 +60,14 @@ import org.springframework.context.annotation.ImportRuntimeHints;
 @ImportRuntimeHints(GuardRuntimeHints.class)
 @RegisterReflectionForBinding(GuardProperties.class)
 public class GuardAutoConfiguration {
+
+  // ---- Metrics fallback (used when Micrometer is absent) ----
+
+  @Bean
+  @ConditionalOnMissingBean(GuardMetrics.class)
+  public NoopGuardMetrics guardMetrics() {
+    return new NoopGuardMetrics();
+  }
 
   // ---- SpEL evaluation ----
 
@@ -88,8 +102,8 @@ public class GuardAutoConfiguration {
   @Bean
   @ConditionalOnMissingBean
   public IdempotentHandler guardIdempotentHandler(
-      IdempotentStore store, IdempotentKeyResolver keyResolver) {
-    return new IdempotentHandler(store, keyResolver);
+      IdempotentStore store, IdempotentKeyResolver keyResolver, GuardMetrics guardMetrics) {
+    return new IdempotentHandler(store, keyResolver, guardMetrics);
   }
 
   // ---- Distributed lock ----
@@ -109,8 +123,8 @@ public class GuardAutoConfiguration {
   @Bean
   @ConditionalOnMissingBean
   public DistributedLockHandler guardDistributedLockHandler(
-      LockProvider lockProvider, LockKeyResolver keyResolver) {
-    return new DistributedLockHandler(lockProvider, keyResolver);
+      LockProvider lockProvider, LockKeyResolver keyResolver, GuardMetrics guardMetrics) {
+    return new DistributedLockHandler(lockProvider, keyResolver, guardMetrics);
   }
 
   // ---- Rate limit ----
@@ -130,8 +144,8 @@ public class GuardAutoConfiguration {
   @Bean
   @ConditionalOnMissingBean
   public RateLimitHandler guardRateLimitHandler(
-      GuardRateLimiter rateLimiter, RateLimitKeyResolver keyResolver) {
-    return new RateLimitHandler(rateLimiter, keyResolver);
+      GuardRateLimiter rateLimiter, RateLimitKeyResolver keyResolver, GuardMetrics guardMetrics) {
+    return new RateLimitHandler(rateLimiter, keyResolver, guardMetrics);
   }
 
   // ---- Audit ----
@@ -144,8 +158,8 @@ public class GuardAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public AuditLogHandler guardAuditLogHandler(AuditPublisher publisher) {
-    return new AuditLogHandler(publisher);
+  public AuditLogHandler guardAuditLogHandler(AuditPublisher publisher, GuardMetrics guardMetrics) {
+    return new AuditLogHandler(publisher, guardMetrics);
   }
 
   // ---- AOP core ----

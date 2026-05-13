@@ -21,6 +21,8 @@ import com.nduyhai.guard.lock.internal.DefaultLockKeyResolver;
 import com.nduyhai.guard.lock.internal.DistributedLockHandler;
 import com.nduyhai.guard.lock.internal.InMemoryLockProvider;
 import com.nduyhai.guard.ratelimit.api.RateLimitKeyResolver;
+import com.nduyhai.guard.metrics.NoopGuardMetrics;
+import com.nduyhai.guard.ratelimit.api.RateLimitKeyResolver;
 import com.nduyhai.guard.ratelimit.internal.DefaultRateLimitKeyResolver;
 import com.nduyhai.guard.ratelimit.internal.RateLimitHandler;
 import com.nduyhai.guard.ratelimit.internal.SlidingWindowRateLimiter;
@@ -71,19 +73,21 @@ class GuardMethodInterceptorIntegrationTests {
     @Bean SpelExpressionEvaluator spelExpressionEvaluator() { return new SpelExpressionEvaluator(); }
     @Bean AnnotationMetadataExtractor annotationMetadataExtractor() { return new AnnotationMetadataExtractor(); }
 
+    @Bean NoopGuardMetrics guardMetrics() { return new NoopGuardMetrics(); }
+
     @Bean IdempotentStore idempotentStore() { return new InMemoryIdempotentStore(); }
     @Bean IdempotentKeyResolver idempotentKeyResolver(SpelExpressionEvaluator e) { return new DefaultIdempotentKeyResolver(e); }
-    @Bean IdempotentHandler idempotentHandler(IdempotentStore s, IdempotentKeyResolver r) { return new IdempotentHandler(s, r); }
+    @Bean IdempotentHandler idempotentHandler(IdempotentStore s, IdempotentKeyResolver r, NoopGuardMetrics m) { return new IdempotentHandler(s, r, m); }
 
     @Bean LockProvider lockProvider() { return new InMemoryLockProvider(); }
     @Bean LockKeyResolver lockKeyResolver(SpelExpressionEvaluator e) { return new DefaultLockKeyResolver(e); }
-    @Bean DistributedLockHandler distributedLockHandler(LockProvider p, LockKeyResolver r) { return new DistributedLockHandler(p, r); }
+    @Bean DistributedLockHandler distributedLockHandler(LockProvider p, LockKeyResolver r, NoopGuardMetrics m) { return new DistributedLockHandler(p, r, m); }
 
     @Bean GuardRateLimiter rateLimiter() { return new SlidingWindowRateLimiter(); }
     @Bean RateLimitKeyResolver rateLimitKeyResolver(SpelExpressionEvaluator e) { return new DefaultRateLimitKeyResolver(e); }
-    @Bean RateLimitHandler rateLimitHandler(GuardRateLimiter l, RateLimitKeyResolver r) { return new RateLimitHandler(l, r); }
+    @Bean RateLimitHandler rateLimitHandler(GuardRateLimiter l, RateLimitKeyResolver r, NoopGuardMetrics m) { return new RateLimitHandler(l, r, m); }
 
-    @Bean AuditLogHandler auditLogHandler() { return new AuditLogHandler(new LoggingAuditPublisher()); }
+    @Bean AuditLogHandler auditLogHandler(NoopGuardMetrics m) { return new AuditLogHandler(new LoggingAuditPublisher(), m); }
 
     // AOP chain — wired manually (GuardAutoConfiguration does this in Boot context)
     @Bean GuardExecutionChain guardExecutionChain(
