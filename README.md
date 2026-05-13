@@ -12,7 +12,7 @@ Guard wraps your methods with composable, ordered guards — idempotency, distri
 <dependency>
     <groupId>com.nduyhai</groupId>
     <artifactId>guard-spring-boot-starter</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -307,11 +307,11 @@ Go to **Settings → Secrets and variables → Actions** and add:
 
 ```bash
 # 1. Set release version (drop -SNAPSHOT) and commit
-./mvnw versions:set -DnewVersion=0.1.0 -DgenerateBackupPoms=false
-git commit -am "release: 0.1.0"
+./mvnw versions:set -DnewVersion=1.0.0 -DgenerateBackupPoms=false
+git commit -am "release: 1.0.0"
 
 # 2. Tag and push — this triggers the release workflow
-git tag v0.1.0
+git tag v1.0.0
 git push origin main --tags
 
 # 3. Bump to next development version
