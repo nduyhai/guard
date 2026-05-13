@@ -266,6 +266,66 @@ into `idempotent` internals.
 
 ---
 
+## Releasing
+
+Guard is published to [Maven Central](https://central.sonatype.com/artifact/com.nduyhai/guard-spring-boot-starter) via a GitHub Actions workflow that fires on version tags.
+
+### CI/CD overview
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `ci.yml` | Push / PR to `main` | Compiles, runs all tests, uploads Surefire reports |
+| `release.yml` | Push tag `v*.*.*` or manual dispatch | Sets version, signs artifacts, publishes to Maven Central, creates GitHub Release |
+
+### One-time setup for maintainers
+
+**1. GPG key**
+
+```bash
+gpg --full-generate-key                                  # RSA 4096, use your email
+gpg --list-secret-keys --keyid-format LONG               # note YOUR_KEY_ID
+gpg --keyserver keyserver.ubuntu.com --send-keys <YOUR_KEY_ID>
+gpg --armor --export-secret-keys <YOUR_KEY_ID>           # copy this into GitHub secret
+```
+
+**2. Maven Central token**
+
+Log in to [central.sonatype.com](https://central.sonatype.com) → Account → **Generate User Token**. Copy the username and password.
+
+**3. GitHub repository secrets**
+
+Go to **Settings → Secrets and variables → Actions** and add:
+
+| Secret | Value |
+|---|---|
+| `GPG_PRIVATE_KEY` | Output of `gpg --armor --export-secret-keys <YOUR_KEY_ID>` |
+| `GPG_PASSPHRASE` | Passphrase chosen during key generation |
+| `CENTRAL_USERNAME` | Token username from central.sonatype.com |
+| `CENTRAL_PASSWORD` | Token password from central.sonatype.com |
+
+### How to cut a release
+
+```bash
+# 1. Set release version (drop -SNAPSHOT) and commit
+./mvnw versions:set -DnewVersion=0.1.0 -DgenerateBackupPoms=false
+git commit -am "release: 0.1.0"
+
+# 2. Tag and push — this triggers the release workflow
+git tag v0.1.0
+git push origin main --tags
+
+# 3. Bump to next development version
+./mvnw versions:set -DnewVersion=0.2.0-SNAPSHOT -DgenerateBackupPoms=false
+git commit -am "chore: start 0.2.0 development"
+git push origin main
+```
+
+The workflow sets the Maven version from the tag, builds and GPG-signs all jars, uploads to the Central Portal, waits until the release is **published**, and then creates a GitHub Release with auto-generated notes. No manual steps are needed after pushing the tag.
+
+To trigger a release manually (e.g. to re-publish without a new tag), use **Actions → Release → Run workflow** and supply the version tag.
+
+---
+
 ## Tech stack
 
 | Concern | Technology |
