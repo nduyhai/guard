@@ -12,7 +12,7 @@ Guard wraps your methods with composable, ordered guards — idempotency, distri
 <dependency>
     <groupId>com.nduyhai</groupId>
     <artifactId>guard-spring-boot-starter</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 

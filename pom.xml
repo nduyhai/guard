@@ -13,7 +13,7 @@
 
     <groupId>com.nduyhai</groupId>
     <artifactId>guard-parent</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <packaging>pom</packaging>
     <name>Guard :: Parent</name>
     <description>Annotation-driven method guard framework for Spring Boot</description>
@@ -54,7 +54,7 @@
     <properties>
         <java.version>25</java.version>
         <spring-modulith.version>2.0.6</spring-modulith.version>
-        <guard.version>0.1.0-SNAPSHOT</guard.version>
+        <guard.version>0.1.0</guard.version>
     </properties>
 
     <dependencyManagement>
