@@ -6,6 +6,7 @@ import com.nduyhai.guard.aop.GuardInvocationContext;
 import com.nduyhai.guard.aop.GuardOperationInvoker;
 import com.nduyhai.guard.core.idempotent.IdempotentStore;
 import com.nduyhai.guard.idempotent.api.IdempotentKeyResolver;
+import com.nduyhai.guard.metrics.GuardMetrics;
 import com.nduyhai.guard.support.GuardUtils;
 import java.time.Duration;
 import java.util.Optional;
@@ -19,6 +20,14 @@ import org.jspecify.annotations.Nullable;
  * method again.
  *
  * <p>Exceptions thrown by the method are NOT cached.
+ *
+ * <p>Records the following metrics via {@link GuardMetrics}:
+ *
+ * <ul>
+ *   <li>{@code guard.idempotent.hit} — cached result replayed
+ *   <li>{@code guard.idempotent.miss} — method executed and result stored
+ *   <li>{@code guard.idempotent.error} — unexpected error during store interaction
+ * </ul>
  */
 public final class IdempotentHandler implements GuardHandler {
 
@@ -26,10 +35,13 @@ public final class IdempotentHandler implements GuardHandler {
 
   private final IdempotentStore store;
   private final IdempotentKeyResolver keyResolver;
+  private final GuardMetrics metrics;
 
-  public IdempotentHandler(IdempotentStore store, IdempotentKeyResolver keyResolver) {
+  public IdempotentHandler(
+      IdempotentStore store, IdempotentKeyResolver keyResolver, GuardMetrics metrics) {
     this.store = store;
     this.keyResolver = keyResolver;
+    this.metrics = metrics;
   }
 
   @Override
@@ -41,15 +53,42 @@ public final class IdempotentHandler implements GuardHandler {
       return invoker.invoke();
     }
 
+    String className = context.getTargetClass().getSimpleName();
+    String methodName = context.getMethod().getName();
+    String provider = store.getClass().getSimpleName();
+
     String key = keyResolver.resolve(context, annotation);
-    Optional<Object> cached = store.get(key);
+
+    Optional<Object> cached;
+    try {
+      cached = store.get(key);
+    } catch (Exception ex) {
+      metrics.recordIdempotentError(className, methodName, provider, ex.getClass().getSimpleName());
+      throw ex;
+    }
+
     if (cached.isPresent()) {
+      metrics.recordIdempotentHit(className, methodName, provider);
       return cached.get();
     }
 
-    Object result = invoker.invoke();
+    Object result;
+    try {
+      result = invoker.invoke();
+    } catch (Exception ex) {
+      metrics.recordIdempotentError(className, methodName, provider, ex.getClass().getSimpleName());
+      throw ex;
+    }
+
     Duration ttl = GuardUtils.parseDuration(annotation.ttl());
-    store.put(key, result, ttl);
+    try {
+      store.put(key, result, ttl);
+    } catch (Exception ex) {
+      metrics.recordIdempotentError(className, methodName, provider, ex.getClass().getSimpleName());
+      throw ex;
+    }
+
+    metrics.recordIdempotentMiss(className, methodName, provider);
     return result;
   }
 

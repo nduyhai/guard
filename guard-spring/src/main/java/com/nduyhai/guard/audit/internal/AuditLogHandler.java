@@ -7,6 +7,8 @@ import com.nduyhai.guard.aop.GuardOperationInvoker;
 import com.nduyhai.guard.core.audit.AuditEvent;
 import com.nduyhai.guard.core.audit.AuditOperation;
 import com.nduyhai.guard.core.audit.AuditPublisher;
+import com.nduyhai.guard.metrics.GuardMetrics;
+import com.nduyhai.guard.metrics.GuardMetricsTags;
 import java.time.Instant;
 import org.jspecify.annotations.Nullable;
 
@@ -15,15 +17,24 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Executes as the outermost handler (order = 50) so it wraps the entire chain and can capture
  * the final result or exception regardless of what other handlers do.
+ *
+ * <p>Records the following metrics via {@link GuardMetrics}:
+ *
+ * <ul>
+ *   <li>{@code guard.audit.success} — audit event published without error, tagged with the action
+ *   <li>{@code guard.audit.failure} — method or publisher threw an exception
+ * </ul>
  */
 public final class AuditLogHandler implements GuardHandler {
 
   public static final int ORDER = 50;
 
   private final AuditPublisher publisher;
+  private final GuardMetrics metrics;
 
-  public AuditLogHandler(AuditPublisher publisher) {
+  public AuditLogHandler(AuditPublisher publisher, GuardMetrics metrics) {
     this.publisher = publisher;
+    this.metrics = metrics;
   }
 
   @Override
@@ -35,7 +46,11 @@ public final class AuditLogHandler implements GuardHandler {
       return invoker.invoke();
     }
 
-    AuditOperation operation = new AuditOperation(annotation.action(), annotation.description());
+    String className = context.getTargetClass().getSimpleName();
+    String methodName = context.getMethod().getName();
+    String action = annotation.action();
+
+    AuditOperation operation = new AuditOperation(action, annotation.description());
     Instant start = Instant.now();
     Object result = null;
     Throwable error = null;
@@ -58,6 +73,13 @@ public final class AuditLogHandler implements GuardHandler {
               start,
               durationMs);
       publisher.publish(event);
+
+      if (error != null) {
+        metrics.recordAuditFailure(
+            className, methodName, action, error.getClass().getSimpleName());
+      } else {
+        metrics.recordAuditSuccess(className, methodName, action);
+      }
     }
   }
 
