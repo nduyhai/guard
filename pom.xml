@@ -13,7 +13,7 @@
 
     <groupId>com.nduyhai</groupId>
     <artifactId>guard-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>pom</packaging>
     <name>Guard :: Parent</name>
     <description>Annotation-driven method guard framework for Spring Boot</description>
@@ -31,7 +31,7 @@
         <developer>
             <id>nduyhai</id>
             <name>Hai Nguyen Duy</name>
-            <email>haind.bp@gmail.com</email>
+            <email>nduyhai@users.noreply.github.com</email>
             <url>https://github.com/nduyhai</url>
         </developer>
     </developers>
@@ -54,7 +54,7 @@
     <properties>
         <java.version>25</java.version>
         <spring-modulith.version>2.0.6</spring-modulith.version>
-        <guard.version>1.0.0</guard.version>
+        <guard.version>1.0.1</guard.version>
     </properties>
 
     <dependencyManagement>
@@ -127,6 +127,14 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>2.21.0</version>
+                    <configuration>
+                        <generateBackupPoms>false</generateBackupPoms>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -147,7 +155,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.7</version>
+                        <version>3.2.8</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -168,7 +176,7 @@
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.7.0</version>
+                        <version>0.10.0</version>
                         <extensions>true</extensions>
                         <configuration>
                             <!-- Matches the <server id="central"> in ~/.m2/settings.xml -->
