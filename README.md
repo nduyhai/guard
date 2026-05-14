@@ -1,4 +1,6 @@
 # Guard
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/nduyhai/guard)
+
 
 **Annotation-driven method guard framework for Spring Boot 4.**
 
