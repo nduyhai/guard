@@ -303,20 +303,37 @@ Go to **Settings → Secrets and variables → Actions** and add:
 | `CENTRAL_USERNAME` | Token username from central.sonatype.com |
 | `CENTRAL_PASSWORD` | Token password from central.sonatype.com |
 
+### Version management
+
+The project uses the [versions-maven-plugin](https://www.mojohaus.org/versions/versions-maven-plugin/) to keep all module versions in sync. `generateBackupPoms` is disabled globally so no `.versionsBackup` files are created.
+
+```bash
+# Set an explicit version across all modules
+./mvnw versions:set -DnewVersion=1.1.0
+
+# Bump to next patch snapshot automatically (1.0.0 → 1.0.1-SNAPSHOT)
+./mvnw versions:set -DnextSnapshot=true
+
+# After setting, also update the <guard.version> property in the root pom.xml
+# to match — then commit both changes together.
+```
+
 ### How to cut a release
 
 ```bash
 # 1. Set release version (drop -SNAPSHOT) and commit
-./mvnw versions:set -DnewVersion=1.0.0 -DgenerateBackupPoms=false
-git commit -am "release: 1.0.0"
+./mvnw versions:set -DnewVersion=1.1.0
+# also update <guard.version>1.1.0</guard.version> in root pom.xml
+git commit -am "release: 1.1.0"
 
 # 2. Tag and push — this triggers the release workflow
-git tag v1.0.0
+git tag v1.1.0
 git push origin main --tags
 
 # 3. Bump to next development version
-./mvnw versions:set -DnewVersion=0.2.0-SNAPSHOT -DgenerateBackupPoms=false
-git commit -am "chore: start 0.2.0 development"
+./mvnw versions:set -DnextSnapshot=true
+# also update <guard.version>1.1.1-SNAPSHOT</guard.version> in root pom.xml
+git commit -am "chore: start 1.1.1-SNAPSHOT development"
 git push origin main
 ```
 
